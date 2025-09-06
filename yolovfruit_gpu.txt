@@ -33,7 +33,7 @@ dataset/
 │   │   └── 696.txt
 │   ├── val/
 
-data.yaml file should contain the below
+Create data.yaml in yolov5 folder
     train: dataset/images/train/
     val: dataset/images/val/
     nc: 3  # Number of classes
@@ -46,7 +46,7 @@ pip install onnx>=1.12.0
 python export.py --weights runs/train/expX/weights/best.pt --img 640 --include onnx
 python export.py --weights runs/train/expX/weights/best.pt --img 640 --include onnx --optimize
 
-#optional
+#optional: Simplify the ONNX model:
 pip install onnxsim
 python -m onnxsim runs/train/expX/weights/best.onnx runs/train/expX/weights/best_simplified.onnx
 

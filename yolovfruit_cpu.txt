@@ -3,7 +3,7 @@ For CPU
 install python 3.9.23
 git clone https://github.com/ultralytics/yolov5
 py -3.9 -m venv fruit_env
- .\fruit_env\Scripts\activate
+.\fruit_env\Scripts\activate
 cd yolov5
 pip install -r requirements.txt
 pip uninstall torch torchvision -y
@@ -15,7 +15,7 @@ python
 import torch
 print(torch.__version__)  # Expected: 2.7.0+cpu
 print(torch.cuda.is_available())  # Expected: False
-python convert_voc_to_yolo.py
+python xml_to_yolo.py
 
 dataset/
 ├── images/
@@ -33,11 +33,11 @@ dataset/
 │   │   └── 696.txt
 │   ├── val/
 
-Create data.yaml in C:\Users\user\yolov5
-train: dataset/images/train/
-val: dataset/images/val/
-nc: 3  # Number of classes
-names: ["apple", "banana", "orange"]  # Class names
+Create data.yaml in yolov5 folder
+    train: dataset/images/train/
+    val: dataset/images/val/
+    nc: 3  # Number of classes
+    names: ["apple", "banana", "orange"]  # Class names
 
 python train.py --img 640 --batch 8 --epochs 50 --data data.yaml --weights yolov5s.pt --device cpu
 python val.py --data data.yaml --weights runs/train/expX/weights/best.pt --img 640 --device cpu
