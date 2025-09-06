@@ -33,10 +33,11 @@ dataset/
 │   │   └── 696.txt
 │   ├── val/
 
-train: dataset/images/train/
-val: dataset/images/val/
-nc: 3  # Number of classes
-names: ["apple", "banana", "orange"]  # Class names
+data.yaml file should contain the below
+    train: dataset/images/train/
+    val: dataset/images/val/
+    nc: 3  # Number of classes
+    names: ["apple", "banana", "orange"]  # Class names
 
 python train.py --img 640 --batch 16 --epochs 50 --data data.yaml --weights yolov5s.pt --device 0
 python val.py --data data.yaml --weights runs/train/expX/weights/best.pt --img 640
