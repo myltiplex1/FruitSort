@@ -1,0 +1,50 @@
+For CPU
+
+install python 3.9.23
+git clone https://github.com/ultralytics/yolov5
+py -3.9 -m venv fruit_env
+ .\fruit_env\Scripts\activate
+cd yolov5
+pip install -r requirements.txt
+pip uninstall torch torchvision -y
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+pip install onnxruntime opencv-python numpy
+pip install onnx>=1.12.0
+
+python
+import torch
+print(torch.__version__)  # Expected: 2.7.0+cpu
+print(torch.cuda.is_available())  # Expected: False
+python convert_voc_to_yolo.py
+
+dataset/
+├── images/
+│   ├── train/
+│   │   ├── 001.jpg
+│   │   ├── 002.jpg
+│   │   └── ...
+│   │   └── 696.jpg
+│   ├── val/
+├── labels/
+│   ├── train/
+│   │   ├── 001.txt
+│   │   ├── 002.txt
+│   │   └── ...
+│   │   └── 696.txt
+│   ├── val/
+
+Create data.yaml in C:\Users\user\yolov5
+train: dataset/images/train/
+val: dataset/images/val/
+nc: 3  # Number of classes
+names: ["apple", "banana", "orange"]  # Class names
+
+python train.py --img 640 --batch 8 --epochs 50 --data data.yaml --weights yolov5s.pt --device cpu
+python val.py --data data.yaml --weights runs/train/expX/weights/best.pt --img 640 --device cpu
+python export.py --weights runs/train/expX/weights/best.pt --img 640 --include onnx
+python export.py --weights runs/train/expX/weights/best.pt --img 640 --include onnx --optimize
+python infer_onnx.py
+
+Optional: Simplify the ONNX model:
+pip install onnxsim
+python -m onnxsim runs/train/expX/weights/best.onnx runs/train/expX/weights/best_simplified.onnx
