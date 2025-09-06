@@ -1,15 +1,29 @@
 # FruitSort
+
 ## Autonomous Fruit Sorting System using YOLO and a 4DOF Robotic Arm
 
-This project is an autonomous system that uses computer vision to detect fruits, classify them, and sort them using a 4-degree-of-freedom (4DOF) robotic arm. The detection is performed using a YOLOv5 model, the inverse kinematics for the arm's movements are calculated in Python, and the arm is controlled by an Arduino.
-
+This project is an autonomous system that uses computer vision to detect fruits, classify them, and sort them using a 4-degree-of-freedom (4DOF) robotic arm. The detection is performed using a YOLOv5 model, the inverse kinematics for the arm's movements are calculated in Python and the arm is controlled by Arduino.
 ## Features
 
 *   **Fruit Detection:** Utilizes a YOLOv5 model to detect and classify different types of fruits from a webcam feed.
-*   **Inverse Kinematics:** The system calculates the required joint angles for the robotic arm using a pure Python implementation of Inverse Kinematics (IK).
-*   **Robotic Arm Control:** A 4DOF robotic arm, controlled by an Arduino and a servo shield, physically sorts the detected fruits.
-*   **Serial Communication:** A Python script communicates with the Arduino via serial communication to send commands for the sorting operation.
-*   **Calibration:** Includes scripts for camera and robotic arm calibration to ensure accurate picking and placing.
+*   **Dataset / Classes:** The model and inference code use three fruit classes: `apple`, `banana`, and `orange`.
+*   **Inverse Kinematics:** The system calculates the required joint angles for the robotic arm using a pure Python implementation of Inverse Kinematics (IK) in `main_serial.py`. `main_test.py` provides tests and simulations for IK and the pick-and-place flow.
+*   **Robotic Arm Control:** A 4DOF robotic arm, controlled by an Arduino and an Adafruit-style PWM servo shield, physically sorts the detected fruits.
+*   **Serial Communication:** A Python script communicates with the Arduino via serial communication to send servo angle commands for the sorting operation.
+*   **Calibration:** Includes scripts for camera and robotic arm calibration to ensure accurate mapping from image coordinates to arm coordinates.
+
+## Dataset / Classes
+
+- Number of classes: 3
+- Classes: `apple`, `banana`, `orange`
+
+Where these are defined in the repo:
+- `detection.py`, `detection1.py`, `infer_onnx.py`, `infer_pt.py`, and `xml_to_coco.py` include the class list (see `class_names = ["apple", "banana", "orange"]`).
+- The training/config files `yolovfruit_cpu.txt` and `yolovfruit_gpu.txt` also reference the class names and the number of classes.
+
+Notes:
+- The system currently sorts only these three fruit types. To add more classes, update the class lists in the detection/inference scripts and retrain a model.
+- Use `xml_to_coco.py` to convert Pascal VOC/XML annotations to YOLO/COCO-compatible label formats for training.
 
 ## Project Structure
 
@@ -17,19 +31,23 @@ Here is an overview of the important files and directories in this project:
 
 | File/Folder | Description |
 | --- | --- |
-| `main_serial.py` | The main script that orchestrates the entire process: captures video, runs detection, calculates inverse kinematics to find joint angles, and sends commands to the Arduino. |
-| `serial_arm/serial_arm.ino` | The primary Arduino sketch that receives commands from `main_serial.py` to control the robotic arm's servos. |
-| `detection.py` / `detection1.py` | Scripts for testing the fruit detection functionality of the YOLOv5 model (ONNX and PyTorch versions). |
-| `infer_onnx.py` / `infer_pt.py` | Scripts for running inference with the trained YOLOv5 models (`.onnx` and `.pt` formats). |
-| `main_test.py` | A test script for verifying the inverse kinematics (IK) calculations and the serial communication with the Arduino. |
-| `manual_servo_test/` | Contains an Arduino sketch (`manual_servo_test.ino`) for manually testing and finding the offset angles for each servo of the robotic arm. |
-| `caliberation_save.py` | Script to save calibration data. |
-| `caliberation_graph.py` | Script to visualize calibration data. |
-| `camera_test.py` | A simple script to test the webcam functionality. |
-| `xml_to_coco.py` | A utility script to convert annotations from XML format to COCO format, which is useful for training the YOLO model. |
-| `yolovfruit_cpu.txt` | A `requirements.txt` file with the necessary Python packages for running the project on a CPU. |
-| `yolovfruit_gpu.txt` | A `requirements.txt` file with the necessary Python packages for running the project on a machine with a GPU. |
-| `runs/` | This directory contains the output from training and detection runs, including saved models, logs, and sample images. |
+| `main_serial.py` | The main script that orchestrates the entire process: captures video, runs detection, calculates inverse kinematics (IK) to find joint angles, and sends commands to the Arduino. It also contains the pick-and-place logic, priority order, and drop-point mapping. |
+| `serial_arm/serial_arm.ino` | The Arduino sketch that receives commands from `main_serial.py` to control the robotic arm's servos (uses Adafruit PWM servo driver). |
+| `manual_servo_test/manual_servo_test.ino` | Arduino sketch used to manually test and find servo offsets for each joint. |
+| `detection.py` / `detection1.py` | Detection/inference wrappers for the YOLOv5 model (`detection1.py` is the PyTorch `.pt`-oriented variant). |
+| `infer_onnx.py` / `infer_pt.py` | Standalone inference examples/scripts for ONNX and PyTorch models. |
+| `main_test.py` | Test harness for IK, drop positions, and serial communication; useful for offline testing before running the live system. |
+| `caliberation_save.py` | Script to save calibration points and homography for mapping image to arm coordinates. |
+| `caliberation_graph.py` | Script to visualize calibration data and check fit/accuracy. |
+| `camera_test.py` | Quick webcam check script. |
+| `xml_to_coco.py` | Utility to convert XML annotations into YOLO/COCO-compatible labels. Update the `classes` list inside this file when you change classes. |
+| `yolovfruit_cpu.txt` / `yolovfruit_gpu.txt` | Project setup instructions and/or package recommendations for CPU vs GPU environments; they also show dataset/class config snippets used during development. |
+| `runs/` | Output from training and detection runs: saved weights (`best.pt`, `best.onnx`), metrics, and visualization images. |
+
+## Fruit-specific behavior in the system
+
+- Pick-and-place priority order: `orange`, `banana`, `apple` (this is enforced in `main_serial.py` so the sorter attends to these fruits in that order per frame).
+- Drop positions: per-class drop coordinates are defined in `main_serial.py` (the default mapping and example positions are present in that file).
 
 ## Hardware Requirements
 
@@ -37,57 +55,101 @@ Here is an overview of the important files and directories in this project:
 *   Webcam
 *   4DOF Robotic Arm with `MG966R` servos (or similar)
 *   Arduino (or a compatible microcontroller)
-*   Arduino Servo Shield
+*   Arduino Servo Shield (Adafruit PWM driver compatible)
 *   12V 2A Power Adapter
 *   LM2596 DC-DC Buck Converter
 
-A detailed schematic of the hardware connections can be found in `schematic.pdf`.
+A schematic of the wiring used for the power and servo connections (if included) is referenced as `schematic.pdf` in the repo.
 
-### Power Setup
+### Power Setup (how I powered the servos)
 
-The `MG966R` servos require a stable power supply. The system is powered as follows:
-1.  A **12V 2A adapter** provides the main power.
-2.  This is connected to an **LM2596 DC-DC buck converter** to step the voltage down to 6V.
-3.  The 6V output from the buck converter is used to power the **Arduino Servo Shield**, which in turn powers the servos. This ensures the servos have enough current without drawing too much from the Arduino's onboard regulator.
+The `MG966R` servos require a stable external supply. The wiring/power approach used in this project:
+
+1.  A **12V 2A adapter** supplies the main power input.
+2.  An **LM2596 DC-DC buck converter** steps the 12V down to ~6V (suitable for MG966R servos).
+3.  The 6V output from the buck converter powers the **Arduino Servo Shield** (the servo shield then distributes power to the servos).
+4.  The Arduino itself is not used as the servo power source — the servo shield gets its supply from the buck converter to avoid drawing excessive current from the Arduino board.
+
+This arrangement prevents servo brownouts and keeps the Arduino stable. Refer to `schematic.pdf` (if present) for the full wiring diagram and connector pinouts.
 
 ## Software and Installation
 
 1.  **Clone the repository:**
-    ```bash
+    ```powershell
     git clone <your-repo-url>
     cd FruitSort
     ```
 
 2.  **Set up Arduino:**
-    *   Open `serial_arm/serial_arm.ino` in the Arduino IDE.
-    *   Install any required libraries for the servos.
-    *   Upload the sketch to your Arduino.
+    *   Open `serial_arm/serial_arm.ino` (or `manual_servo_test/manual_servo_test.ino`) in the Arduino IDE.
+    *   Install required libraries (e.g., `Adafruit_PWMServoDriver`).
+    *   Upload the sketch to the Arduino.
 
-3.  **Install Python dependencies:**
-    *   If you are using a **GPU**, install the packages from `yolovfruit_gpu.txt`:
-        ```bash
+3.  **Create and activate a Python virtual environment (Windows example):**
+    ```powershell
+    py -3.9 -m venv fruit_env
+    .\fruit_env\Scripts\activate
+    ```
+
+4.  **Install Python dependencies:**
+    *   If you are using a **GPU**, install packages suggested in `yolovfruit_gpu.txt`:
+        ```powershell
         pip install -r yolovfruit_gpu.txt
         ```
-    *   If you are using a **CPU**, install the packages from `yolovfruit_cpu.txt`:
-        ```bash
+    *   If you are using a **CPU**, install packages suggested in `yolovfruit_cpu.txt`:
+        ```powershell
         pip install -r yolovfruit_cpu.txt
         ```
 
 ## Usage
 
 1.  **Calibrate the System:**
-    *   Run `manual_servo_test/manual_servo_test.ino` to determine the servo offsets.
-    *   Run `caliberation_save.py` and `camera_test.py` to perform camera and spatial calibration.
+    *   Run the manual servo test sketch to find per-servo offsets (`manual_servo_test/manual_servo_test.ino`).
+    *   Collect camera to world calibration points and save them using `caliberation_save.py`. Visualize/verify with `caliberation_graph.py`.
+    *   Confirm webcam works with `camera_test.py`.
 
-2.  **Run the Main Application:**
-    *   Make sure the Arduino with `serial_arm.ino` is connected to your computer.
-    *   Execute the main script:
-        ```bash
-        python main_serial.py
-        ```
+2.  **Run detection / inference only (optional):**
+    *   Use `infer_onnx.py` or `infer_pt.py` to run a single-image inference and confirm the model predicts the three classes (`apple`, `banana`, `orange`).
+
+3.  **Run the full system:**
+    *   Connect the Arduino with the servo shield (powered from the buck converter).
+    *   Run:
+    ```powershell
+    python main_serial.py
+    ```
+    *   Observe detection boxes, the system will compute world coordinates, solve IK in Python, and send servo commands to the Arduino to pick and place fruits.
 
 ## Training the YOLOv5 Model
 
-The YOLOv5 model was trained on a custom dataset of fruits. The `runs/train/` directory contains artifacts from the training process, such as weights (`best.pt`, `best.onnx`), metrics, and learning curves.
+The YOLOv5 model was trained on a custom dataset containing the three fruit classes described above. The `runs/train/` directory contains artifacts from the training process (weights: `best.pt`, `best.onnx`, metrics and visualization images).
 
-If you want to retrain the model on your own dataset, you can use the `xml_to_coco.py` script to get your data into the right format and then follow the standard YOLOv5 training procedures.
+To retrain:
+1. Prepare data in Pascal VOC/XML or YOLO txt format.
+2. Use `xml_to_coco.py` to convert XML labels to YOLO-style text labels if needed (edit the `classes` list inside the script to match your categories).
+3. Train with your YOLOv5 training script (not included here) using prepared dataset and config (adjust `nc` and `names` accordingly).
+
+## Troubleshooting & Tips
+
+*  If servos jitter or the Arduino resets under load, ensure servo power is from the LM2596-buck -> servo shield and not the Arduino 5V rail.
+*  Test the IK with `main_test.py` before connecting to hardware.
+*  If detection is slow on CPU, use the ONNX path or smaller models, or run on a machine with a CUDA-capable GPU and the packages from `yolovfruit_gpu.txt`.
+
+## Where to look next (quick links)
+
+*  `main_serial.py` — full system orchestration, IK and serial comms.
+*  `serial_arm/serial_arm.ino` — Arduino servo control sketch.
+*  `manual_servo_test/manual_servo_test.ino` — servo offset tuning.
+*  `detection.py`, `detection1.py`, `infer_onnx.py`, `infer_pt.py` — detection & inference examples.
+*  `xml_to_coco.py` — annotation conversion; check `classes` array here when changing dataset classes.
+
+---
+
+Completion summary:
+- Added explicit "Dataset / Classes" section listing the three fruit classes (`apple`, `banana`, `orange`) and pointed to the files where they are defined.
+- Kept and integrated previously added notes about power, servo shield, and pure-Python IK.
+- Provided usage and troubleshooting pointers.
+
+If you'd like, I can:
+- Update the actual `README.md` file in the repo for you (I currently can't edit files directly here — I can print the patch or the exact git commands to apply).
+- Add a short sample images section showing example detections from `runs/detect/exp/` (I can insert thumbnails and captions if you want).
+- Add a small "Quick start" script or a PowerShell snippet that runs detection-only (or the full pipeline) with safe flags for testing. Which would you prefer next?
