@@ -45,7 +45,7 @@ pip install onnx>=1.12.0
 python export.py --weights runs/train/expX/weights/best.pt --img 640 --include onnx
 python export.py --weights runs/train/expX/weights/best.pt --img 640 --include onnx --optimize
 
-
+#optional
 pip install onnxsim
 python -m onnxsim runs/train/expX/weights/best.onnx runs/train/expX/weights/best_simplified.onnx
 
