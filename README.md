@@ -1,4 +1,4 @@
-# FruitSort
+FruitSort
 ## Autonomous Fruit Sorting System using YOLO and a 4DOF Robotic Arm
 
 This project is an autonomous system that uses computer vision to detect fruits, classify them, and sort them using a 4-degree-of-freedom (4DOF) robotic arm. The detection is performed using a YOLOv5 model, the inverse kinematics for the arm's movements are calculated in Python, and the arm is controlled by an Arduino.
