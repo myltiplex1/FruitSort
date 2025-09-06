@@ -76,15 +76,9 @@ This arrangement prevents servo brownouts and keeps the Arduino stable. Refer to
     *   Install required libraries (e.g., `Adafruit_PWMServoDriver`).
     *   Upload the sketch to the Arduino.
 
-3.  **Install Python dependencies:**
-    *   If you are using a **GPU**, install packages suggested in `yolovfruit_gpu.txt`:
-        ```powershell
-        pip install -r yolovfruit_gpu.txt
-        ```
-    *   If you are using a **CPU**, install packages suggested in `yolovfruit_cpu.txt`:
-        ```powershell
-        pip install -r yolovfruit_cpu.txt
-        ```
+3.  **Install Python dependencies and Train YOLO Model:**
+    *   If you are using a **GPU** follow the steps suggested in `yolovfruit_gpu.txt`
+    *   If you are using a **CPU** follow the steps suggested in `yolovfruit_cpu.txt`
 
 ## Usage
 
@@ -96,22 +90,25 @@ This arrangement prevents servo brownouts and keeps the Arduino stable. Refer to
 2.  **Run detection / inference only (optional):**
     *   Use `infer_onnx.py` or `infer_pt.py` to run a single-image inference and confirm the model predicts the three classes (`apple`, `banana`, `orange`).
 
-3.  **Run the full system:**
+3. **Test detection and conversion:**
+    *   Use `detect_and_convert.py` to test the predictions and confirm the real world coordinates are correct.
+
+4.  **Run the full system:**
     *   Connect the Arduino with the servo shield (powered from the buck converter).
     *   Run:
     ```powershell
     python main_serial.py
     ```
-    *   Observe detection boxes, the system will compute world coordinates, solve IK in Python, and send servo commands to the Arduino to pick and place fruits.
+    *   Observe detection boxes, the system will compute real world coordinates, solve IK in Python, add offsets and send servo commands to the Arduino to pick, lift and place fruits.
 
 ## Training the YOLOv5 Model
 
-The YOLOv5 model was trained on a custom dataset containing the three fruit classes described above. The `runs/train/` directory contains artifacts from the training process (weights: `best.pt`, `best.onnx`, metrics and visualization images).
+The YOLOv5 model was trained on a custom dataset containing the three fruit classes described above. The `runs` directory contains artifacts from the training process (weights: `best.pt`, `best.onnx`, metrics and visualization images).
 
 To retrain:
 1. Prepare data in Pascal VOC/XML or YOLO txt format.
 2. Use `xml_to_coco.py` to convert XML labels to YOLO-style text labels if needed (edit the `classes` list inside the script to match your categories).
-3. Train with your YOLOv5 training script (not included here) using prepared dataset and config (adjust `nc` and `names` accordingly).
+3. Train using your prepared dataset and config (adjust `nc` and `names` accordingly) by following the steps in `yolovfruit_gpu.txt` if you are using a **GPU** or `yolovfruit_cpu.txt` if you are using a **CPU**.
 
 ## Troubleshooting & Tips
 
@@ -128,13 +125,3 @@ To retrain:
 *  `xml_to_coco.py` — annotation conversion; check `classes` array here when changing dataset classes.
 
 ---
-
-Completion summary:
-- Added explicit "Dataset / Classes" section listing the three fruit classes (`apple`, `banana`, `orange`) and pointed to the files where they are defined.
-- Kept and integrated previously added notes about power, servo shield, and pure-Python IK.
-- Provided usage and troubleshooting pointers.
-
-If you'd like, I can:
-- Update the actual `README.md` file in the repo for you (I currently can't edit files directly here — I can print the patch or the exact git commands to apply).
-- Add a short sample images section showing example detections from `runs/detect/exp/` (I can insert thumbnails and captions if you want).
-- Add a small "Quick start" script or a PowerShell snippet that runs detection-only (or the full pipeline) with safe flags for testing. Which would you prefer next?
