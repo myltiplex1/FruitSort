@@ -67,7 +67,7 @@ This arrangement prevents servo brownouts and keeps the Arduino stable. Refer to
 
 1.  **Clone the repository:**
     ```powershell
-    git clone <your-repo-url>
+    git clone https://github.com/myltiplex1/FruitSort.git
     cd FruitSort
     ```
 
