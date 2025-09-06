@@ -10,19 +10,15 @@ This project is an autonomous system that uses computer vision to detect fruits,
 *   **Inverse Kinematics:** The system calculates the required joint angles for the robotic arm using a pure Python implementation of Inverse Kinematics (IK) in `main_serial.py`. `main_test.py` provides tests and simulations for IK and the pick-and-place flow.
 *   **Robotic Arm Control:** A 4DOF robotic arm, controlled by an Arduino and an Adafruit-style PWM servo shield, physically sorts the detected fruits.
 *   **Serial Communication:** A Python script communicates with the Arduino via serial communication to send servo angle commands for the sorting operation.
-*   **Calibration:** Includes scripts for camera and robotic arm calibration to ensure accurate mapping from image coordinates to arm coordinates.
+*   **Calibration:** Includes scripts for camera and robotic arm calibration to ensure accurate mapping from image coordinates to real world coordinates.
 
 ## Dataset / Classes
 
 - Number of classes: 3
 - Classes: `apple`, `banana`, `orange`
 
-Where these are defined in the repo:
-- `detection.py`, `detection1.py`, `infer_onnx.py`, `infer_pt.py`, and `xml_to_coco.py` include the class list (see `class_names = ["apple", "banana", "orange"]`).
-- The training/config files `yolovfruit_cpu.txt` and `yolovfruit_gpu.txt` also reference the class names and the number of classes.
-
 Notes:
-- The system currently sorts only these three fruit types. To add more classes, update the class lists in the detection/inference scripts and retrain a model.
+- The system currently sorts only these three fruit types. 
 - Use `xml_to_coco.py` to convert Pascal VOC/XML annotations to YOLO/COCO-compatible label formats for training.
 
 ## Project Structure
@@ -31,7 +27,7 @@ Here is an overview of the important files and directories in this project:
 
 | File/Folder | Description |
 | --- | --- |
-| `main_serial.py` | The main script that orchestrates the entire process: captures video, runs detection, calculates inverse kinematics (IK) to find joint angles, and sends commands to the Arduino. It also contains the pick-and-place logic, priority order, and drop-point mapping. |
+| `main_serial.py` | The main script that orchestrates the entire process: captures video, runs detection, calculates inverse kinematics (IK) to find joint angles,adds the required offsets and sends commands to the Arduino. It also contains the pick-and-place logic, priority order, and drop-point mapping. |
 | `serial_arm/serial_arm.ino` | The Arduino sketch that receives commands from `main_serial.py` to control the robotic arm's servos (uses Adafruit PWM servo driver). |
 | `manual_servo_test/manual_servo_test.ino` | Arduino sketch used to manually test and find servo offsets for each joint. |
 | `detection.py` / `detection1.py` | Detection/inference wrappers for the YOLOv5 model (`detection1.py` is the PyTorch `.pt`-oriented variant). |
@@ -44,11 +40,6 @@ Here is an overview of the important files and directories in this project:
 | `yolovfruit_cpu.txt` / `yolovfruit_gpu.txt` | Project setup instructions and/or package recommendations for CPU vs GPU environments; they also show dataset/class config snippets used during development. |
 | `runs/` | Output from training and detection runs: saved weights (`best.pt`, `best.onnx`), metrics, and visualization images. |
 
-## Fruit-specific behavior in the system
-
-- Pick-and-place priority order: `orange`, `banana`, `apple` (this is enforced in `main_serial.py` so the sorter attends to these fruits in that order per frame).
-- Drop positions: per-class drop coordinates are defined in `main_serial.py` (the default mapping and example positions are present in that file).
-
 ## Hardware Requirements
 
 *   A computer (with a GPU for better performance, but CPU is also supported).
@@ -59,7 +50,7 @@ Here is an overview of the important files and directories in this project:
 *   12V 2A Power Adapter
 *   LM2596 DC-DC Buck Converter
 
-A schematic of the wiring used for the power and servo connections (if included) is referenced as `schematic.pdf` in the repo.
+A detailed schematic of the hardware connections can be found in schematic.pdf.
 
 ### Power Setup (how I powered the servos)
 
@@ -70,7 +61,7 @@ The `MG966R` servos require a stable external supply. The wiring/power approach 
 3.  The 6V output from the buck converter powers the **Arduino Servo Shield** (the servo shield then distributes power to the servos).
 4.  The Arduino itself is not used as the servo power source — the servo shield gets its supply from the buck converter to avoid drawing excessive current from the Arduino board.
 
-This arrangement prevents servo brownouts and keeps the Arduino stable. Refer to `schematic.pdf` (if present) for the full wiring diagram and connector pinouts.
+This arrangement prevents servo brownouts and keeps the Arduino stable. Refer to `schematic.pdf' for the full wiring diagram and connector pinouts.
 
 ## Software and Installation
 
@@ -85,13 +76,7 @@ This arrangement prevents servo brownouts and keeps the Arduino stable. Refer to
     *   Install required libraries (e.g., `Adafruit_PWMServoDriver`).
     *   Upload the sketch to the Arduino.
 
-3.  **Create and activate a Python virtual environment (Windows example):**
-    ```powershell
-    py -3.9 -m venv fruit_env
-    .\fruit_env\Scripts\activate
-    ```
-
-4.  **Install Python dependencies:**
+3.  **Install Python dependencies:**
     *   If you are using a **GPU**, install packages suggested in `yolovfruit_gpu.txt`:
         ```powershell
         pip install -r yolovfruit_gpu.txt
