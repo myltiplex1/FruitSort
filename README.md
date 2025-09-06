@@ -63,13 +63,7 @@ The `MG966R` servos require a stable power supply. The system is powered as foll
     *   Install any required libraries for the servos.
     *   Upload the sketch to your Arduino.
 
-3.  **Create a Python virtual environment:**
-    ```bash
-    python -m venv venv
-    venv\Scripts\activate
-    ```
-
-4.  **Install Python dependencies:**
+3.  **Install Python dependencies:**
     *   If you are using a **GPU**, install the packages from `yolovfruit_gpu.txt`:
         ```bash
         pip install -r yolovfruit_gpu.txt
