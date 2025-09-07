@@ -55,7 +55,7 @@ Here is an overview of the important files and directories in this project:
 *   12V 2A Power Adapter
 *   LM2596 DC-DC Buck Converter
 
-A detailed schematic of the hardware connections can be found in schematic.pdf.
+A detailed schematic of the hardware connections can be found in schematic_diagram.pdf.
 
 ### Power Setup (how I powered the servos)
 
@@ -66,7 +66,7 @@ The `MG966R` servos require a stable external supply. The wiring/power approach 
 3.  The 6V output from the buck converter powers the **Arduino Servo Shield** (the servo shield then distributes power to the servos).
 4.  The Arduino itself is not used as the servo power source — the servo shield gets its supply from the buck converter to avoid drawing excessive current from the Arduino board.
 
-This arrangement prevents servo brownouts and keeps the Arduino stable. Refer to `schematic.pdf' for the full wiring diagram and connector pinouts.
+This arrangement prevents servo brownouts and keeps the Arduino stable. Refer to `schematic_diagram.pdf' for the full wiring diagram and connector pinouts.
 
 ## Software and Installation
 
